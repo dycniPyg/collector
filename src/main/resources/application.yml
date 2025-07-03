@@ -16,6 +16,7 @@ server:
 
 logging:
   level:
+    com.chungju.collector: debug
     p6spy: INFO
     org.hibernate.SQL: OFF
     org.hibernate.type.descriptor.sql.BasicBinder: OFF

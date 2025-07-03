@@ -42,4 +42,10 @@ public class ConsumerController {
 
         return new ResponseEntity(ApiResponse.ok(consumerService.findAll()), HttpStatus.OK);
     }
+
+    @GetMapping(value = "search")
+    public ResponseEntity<ApiResponse<?>> search() {
+        log.debug("search");
+        return new ResponseEntity(ApiResponse.ok("ok"), HttpStatus.OK);
+    }
 }
