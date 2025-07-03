@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.SourceType;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -47,8 +48,9 @@ public class PowerProduction {
     @Column(name = "timestamp", nullable = false)
     private LocalDateTime timestamp;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "source_type", length = 50)
-    private String sourceType;
+    private SourceType sourceType;
 
     @Column(name = "value_kw", precision = 6, scale = 2)
     private BigDecimal valueKw;
