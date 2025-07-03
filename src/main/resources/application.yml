@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: collector
+  datasource:
+    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+    url: jdbc:p6spy:postgresql://192.168.0.156:31457/chungju
+    username: dycni
+    password: 1234
+
+  jpa:
+    hibernate:
+      ddl-auto: none  # create, update, none
+
+server:
+  port: 80
+
+logging:
+  level:
+    p6spy: INFO
+    org.hibernate.SQL: OFF
+    org.hibernate.type.descriptor.sql.BasicBinder: OFF

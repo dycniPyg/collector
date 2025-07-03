@@ -1,0 +1,59 @@
+package com.chungju.collector.consumer.domain;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+/**
+ * packageName    : com.chungju.collector.consumer.domain
+ * fileName       : Consumer
+ * author          : YoungGyun Park
+ * date           : 2025-07-03
+ * description    :
+ * ===========================================================
+ * DATE              AUTHOR             NOTE
+ * -----------------------------------------------------------
+ * 2025-07-03        YoungGyun Park      최초 생성
+ */
+
+@Data
+@AllArgsConstructor @NoArgsConstructor
+@Entity
+@Table(name = "consumer_site")
+public class ConsumerSite {
+
+    @Id
+    @GeneratedValue
+    @Column(name = "site_id", columnDefinition = "uuid", updatable = false, nullable = false)
+    private UUID id;
+
+    @Column(name = "site_name", length = 100)
+    private String siteName;
+
+    @Column(name = "address", columnDefinition = "text")
+    private String address;
+
+    @Column(name = "kWp", precision = 6, scale = 2)
+    private BigDecimal kWp;
+
+    @Column(name = "contact", length = 100)
+    private String contact;
+
+    @Column(name = "ip")
+    private String ip;
+
+    @CreationTimestamp
+    @Column(name = "create_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "update_at")
+    private LocalDateTime updateAt;
+}
