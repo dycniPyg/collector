@@ -45,6 +45,9 @@ dependencies {
     // p6spy
     implementation 'p6spy:p6spy:3.9.1'
     implementation 'com.github.vertical-blank:sql-formatter:2.0.3'
+
+    // netty
+    implementation 'io.netty:netty-all:4.1.109.Final'
 }
 
 def querydslDir = layout.buildDirectory.dir("generated/querydsl").get().asFile
