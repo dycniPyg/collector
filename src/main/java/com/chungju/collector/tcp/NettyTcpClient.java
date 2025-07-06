@@ -1,10 +1,8 @@
 package com.chungju.collector.tcp;
 
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.EventLoopGroup;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -12,6 +10,8 @@ import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * packageName    : com.chungju.collector.tcp
@@ -28,7 +28,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class NettyTcpClient {
 
-    public void connect(String host, int port, ChannelInboundHandlerAdapter handler, String sendMessage) {
+    public void connect(String host, int port, ChannelInboundHandlerAdapter handler, ByteBuf sendMessage) {
         EventLoopGroup group = new NioEventLoopGroup();
 
         try {
@@ -44,11 +44,11 @@ public class NettyTcpClient {
                         }
                     });
 
-            log.debug("TCP 서버 연결 시도 → {}:{}", host, port);
+            log.debug("TCP 서버 연결 시도 → {}:{}", host, port); // 연결시도에 대한 timeout 설정을 해야겠다.
 
             ChannelFuture future = bootstrap.connect(host, port).awaitUninterruptibly();
-
-            if (future.isSuccess()) {
+            boolean success = future.awaitUninterruptibly(5, TimeUnit.SECONDS);
+            if (success && future.isSuccess()) {
                 log.debug("TCP 서버 연결 성공 → {}:{}", host, port);
                 future.channel().writeAndFlush(sendMessage);
                 future.channel().closeFuture().sync();
