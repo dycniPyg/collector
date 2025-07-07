@@ -42,14 +42,11 @@ public class ConsumerSite {
     @Column(name = "address", columnDefinition = "text")
     private String address;
 
-    @Column(name = "kWp", precision = 6, scale = 2)
-    private BigDecimal kWp;
+    @Column(name = "kwp", precision = 6, scale = 2)
+    private BigDecimal kwp;
 
-    @Column(name = "contact", length = 100)
-    private String contact;
-
-    @Column(name = "ip")
-    private String ip;
+    @Column(name = "brand_name", length = 100)
+    private String brandName;
 
     @CreationTimestamp
     @Column(name = "create_at", updatable = false)
@@ -64,4 +61,7 @@ public class ConsumerSite {
 
     @OneToMany(mappedBy = "site", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PowerProduction> productions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "site", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ConsumerSiteIp> ipList = new ArrayList<>();
 }

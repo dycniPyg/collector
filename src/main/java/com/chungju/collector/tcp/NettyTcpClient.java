@@ -62,4 +62,38 @@ public class NettyTcpClient {
             group.shutdownGracefully();
         }
     }
+
+    public boolean testConnection(String host, int port, int timeoutSeconds) {
+        EventLoopGroup group = new NioEventLoopGroup();
+
+        try {
+            Bootstrap bootstrap = new Bootstrap();
+            bootstrap.group(group)
+                    .channel(NioSocketChannel.class)
+                    .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, timeoutSeconds * 1000)
+                    .handler(new ChannelInitializer<SocketChannel>() {
+                        @Override
+                        protected void initChannel(SocketChannel ch) {
+                            // 요청/응답 핸들러 생략 → 연결만 테스트
+                        }
+                    });
+
+            log.debug("TCP 서버 연결 시도 → {}:{}", host, port);
+            ChannelFuture future = bootstrap.connect(host, port).awaitUninterruptibly();
+
+            if (future.isSuccess()) {
+                log.debug("TCP 서버 연결 성공 → {}:{}", host, port);
+                future.channel().close().sync(); // 바로 연결 종료
+                return true;
+            } else {
+                log.error("TCP 서버 연결 실패 → {}:{}", host, port, future.cause());
+                return false;
+            }
+        } catch (Exception e) {
+            log.error("TCP 연결 테스트 중 예외 발생", e);
+            return false;
+        } finally {
+            group.shutdownGracefully();
+        }
+    }
 }

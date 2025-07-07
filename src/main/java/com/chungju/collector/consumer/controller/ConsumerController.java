@@ -75,6 +75,24 @@ public class ConsumerController {
         return new ResponseEntity(ApiResponse.ok("ok"), HttpStatus.OK);
     }
 
+    @GetMapping(value = "connection/test")
+    public ResponseEntity<ApiResponse<?>> conTest() {
+
+        log.debug("conTest");
+
+        String host = "112.167.203.241";
+        int port = 502;
+        Boolean result = nettyTcpClient.testConnection(host, port, 1);
+
+        if(result) {
+            return new ResponseEntity(ApiResponse.ok("connection success","ok"), HttpStatus.OK);
+        } else {
+            return new ResponseEntity(ApiResponse.ok("connection failed","failed"), HttpStatus.OK);
+        }
+
+
+    }
+
     public byte[] buildModbusRequest(int transactionId, int unitId, int functionCode, int startAddr, int wordCount) {
         ByteBuffer buffer = ByteBuffer.allocate(12); // MBAP(7B) + PDU(5B) = 12B
         buffer.order(ByteOrder.BIG_ENDIAN);
