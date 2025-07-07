@@ -1,7 +1,7 @@
 package com.chungju.collector.consumer.repository;
 
-import com.chungju.collector.common.domain.Users;
 import com.chungju.collector.consumer.domain.ConsumerSite;
+import com.chungju.collector.consumer.dto.ConsumerSiteAndIpDto;
 
 import java.util.List;
 
@@ -18,4 +18,5 @@ import java.util.List;
  */
 public interface ConsumerRepositoryCustom {
     List<ConsumerSite> findAll();
+    List<ConsumerSiteAndIpDto> findConsumerSiteAndIp();
 }

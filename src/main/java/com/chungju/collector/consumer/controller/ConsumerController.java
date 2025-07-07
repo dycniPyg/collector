@@ -3,6 +3,7 @@ package com.chungju.collector.consumer.controller;
 import com.chungju.collector.common.wrapper.ApiResponse;
 import com.chungju.collector.consumer.adapter.inbound.tcp.PowerProductionTcpHandler;
 import com.chungju.collector.consumer.domain.port.input.PowerProductionUseCase;
+import com.chungju.collector.consumer.dto.ConsumerSiteAndIpDto;
 import com.chungju.collector.consumer.service.ConsumerService;
 import com.chungju.collector.tcp.NettyTcpClient;
 import io.netty.buffer.Unpooled;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.List;
 
 /**
  * packageName    : com.chungju.collector.consumer.controller
@@ -78,14 +80,24 @@ public class ConsumerController {
     @GetMapping(value = "connection/test")
     public ResponseEntity<ApiResponse<?>> conTest() {
 
-        log.debug("conTest");
+        List<ConsumerSiteAndIpDto> resultQuery = consumerService.findConsumerSiteAndIp();
 
-        String host = "112.167.203.241";
-        int port = 502;
-        Boolean result = nettyTcpClient.testConnection(host, port, 1);
+        for (int i = 0; i < resultQuery.size(); i++) {
+            ConsumerSiteAndIpDto dto = resultQuery.get(i);
+            boolean isConnected = nettyTcpClient.testConnection(dto.ip(), dto.port(), 5);
 
+            ConsumerSiteAndIpDto updatedDto = new ConsumerSiteAndIpDto(
+                    dto.siteId(), dto.siteName(),
+                    dto.ip(), dto.port(), isConnected
+            );
+
+            resultQuery.set(i, updatedDto); // 리스트의 요소 교체
+            log.debug("🌐 {} 연결 여부: {}", updatedDto.ip(), updatedDto.connYn());
+        }
+
+        Boolean result = true;
         if(result) {
-            return new ResponseEntity(ApiResponse.ok("connection success","ok"), HttpStatus.OK);
+            return new ResponseEntity(ApiResponse.ok("result",resultQuery), HttpStatus.OK);
         } else {
             return new ResponseEntity(ApiResponse.ok("connection failed","failed"), HttpStatus.OK);
         }
