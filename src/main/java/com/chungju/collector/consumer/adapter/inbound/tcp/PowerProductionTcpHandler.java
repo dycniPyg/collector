@@ -32,25 +32,25 @@ public class PowerProductionTcpHandler extends SimpleChannelInboundHandler<Strin
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, String msg) {
-        log.debug("📥 TCP 메시지 수신: {}", msg);
+        log.debug("TCP 메시지 수신: {}", msg);
 
         try {
             byte[] rawData = msg.getBytes(StandardCharsets.ISO_8859_1);
             PowerProduction production = parseModbusResponse(rawData);
 
-            log.debug("✅ 파싱 완료: {}", production);
+            log.debug("파싱 완료: {}", production);
 
             if (!future.isDone()) {
                 future.complete(production);
             }
         } catch (Exception e) {
-            log.error("🚨 파싱 중 오류 발생", e);
+            log.error("파싱 중 오류 발생", e);
             if (!future.isDone()) {
                 future.completeExceptionally(e);
             }
         } finally {
             ctx.close();
-            log.debug("🔌 채널 닫힘");
+            log.debug("채널 닫힘");
         }
     }
 
