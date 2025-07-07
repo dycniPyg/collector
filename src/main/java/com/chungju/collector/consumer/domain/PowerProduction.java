@@ -1,10 +1,10 @@
 package com.chungju.collector.consumer.domain;
 
+import com.chungju.collector.common.domain.ResourceType;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.SourceType;
@@ -31,16 +31,13 @@ import java.util.UUID;
 @NoArgsConstructor
 @Entity
 @Table(name = "power_production")
+@ToString(exclude = "site")
 public class PowerProduction {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false, updatable = false)
     private Long id;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "site_id", nullable = false)
-    private ConsumerSite site;
 
     @Column(name = "device_id", nullable = true, columnDefinition = "UUID")
     private UUID deviceId;
@@ -49,8 +46,8 @@ public class PowerProduction {
     private LocalDateTime timestamp;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "source_type", length = 50, nullable = false)
-    private SourceType sourceType;
+    @Column(name = "resource_type", length = 50, nullable = false)
+    private ResourceType resourceType;
 
     @Column(name = "pv_voltage", precision = 6, scale = 2)
     private BigDecimal pvVoltage;
@@ -113,6 +110,18 @@ public class PowerProduction {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "site_id")
+    @JsonIgnore
+    private ConsumerSite site;
+
+    @PrePersist
+    public void prePersist() {
+        if (timestamp == null) {
+            timestamp = LocalDateTime.now();
+        }
+    }
 }
 
 

@@ -11,7 +11,7 @@ package com.chungju.collector.common.domain;
  * -----------------------------------------------------------
  * 2025-07-03        YoungGyun Park      최초 생성
  */
-public enum SourceType {
+public enum ResourceType {
 
     PV("태양광"),
     WIND("풍력"),
@@ -25,7 +25,7 @@ public enum SourceType {
 
     private final String displayName;
 
-    SourceType(String displayName) {
+    ResourceType(String displayName) {
         this.displayName = displayName;
     }
 

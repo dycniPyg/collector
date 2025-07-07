@@ -1,7 +1,10 @@
 package com.chungju.collector.consumer.controller;
 
+import com.chungju.collector.common.domain.ResourceType;
 import com.chungju.collector.common.wrapper.ApiResponse;
 import com.chungju.collector.consumer.adapter.inbound.tcp.PowerProductionTcpHandler;
+import com.chungju.collector.consumer.domain.ConsumerSite;
+import com.chungju.collector.consumer.domain.PowerProduction;
 import com.chungju.collector.consumer.domain.port.input.PowerProductionUseCase;
 import com.chungju.collector.consumer.dto.ConsumerSiteAndIpDto;
 import com.chungju.collector.consumer.service.ConsumerService;
@@ -9,6 +12,7 @@ import com.chungju.collector.tcp.NettyTcpClient;
 import io.netty.buffer.Unpooled;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Hibernate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +22,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  * packageName    : com.chungju.collector.consumer.controller
@@ -58,6 +64,9 @@ public class ConsumerController {
     public ResponseEntity<ApiResponse<?>> search() {
         log.debug("search");
 
+        ConsumerSite consumerSite = consumerService.findAll().get(0);
+        Hibernate.initialize(consumerSite.getProductions()); // 강제 초기화
+        log.debug("consumerSite: {}", consumerSite.toString());
         String host = "112.167.203.241";
         int port = 502;
 
@@ -68,13 +77,32 @@ public class ConsumerController {
                 0x0000,    // Start Address (40001)
                 0x0012     // Word Count (18개 레지스터)
         );
+        CompletableFuture<PowerProduction> future = new CompletableFuture<>();
+        PowerProductionTcpHandler handler = new PowerProductionTcpHandler(future);
 
-        PowerProductionTcpHandler handler = new PowerProductionTcpHandler(powerProductionUseCase);
+        CompletableFuture<PowerProduction> resultFuture = nettyTcpClient.connect(
+                host, port, handler, Unpooled.wrappedBuffer(requestFrame)
+        );
 
+        try {
+            PowerProduction production = resultFuture.get(5, TimeUnit.SECONDS);
 
-        nettyTcpClient.connect(host, port, handler, Unpooled.wrappedBuffer(requestFrame));
+            production.setSite(ConsumerSite.builder()
+                            .id(consumerSite.getId())
+                    .build());
+            production.setResourceType(ResourceType.PV);
 
-        return new ResponseEntity(ApiResponse.ok("ok"), HttpStatus.OK);
+            log.info("Controller에서 수신한 데이터: {}", production);
+
+            // DB 저장
+            powerProductionUseCase.saveProduction(production);
+
+            return ResponseEntity.ok(ApiResponse.ok(production));
+        } catch (Exception e) {
+            log.error("데이터 수신 실패", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.fail("데이터 수신 실패"));
+        }
     }
 
     @GetMapping(value = "connection/test")
@@ -95,14 +123,7 @@ public class ConsumerController {
             log.debug("🌐 {} 연결 여부: {}", updatedDto.ip(), updatedDto.connYn());
         }
 
-        Boolean result = true;
-        if(result) {
-            return new ResponseEntity(ApiResponse.ok("result",resultQuery), HttpStatus.OK);
-        } else {
-            return new ResponseEntity(ApiResponse.ok("connection failed","failed"), HttpStatus.OK);
-        }
-
-
+        return new ResponseEntity(ApiResponse.ok("result",resultQuery), HttpStatus.OK);
     }
 
     public byte[] buildModbusRequest(int transactionId, int unitId, int functionCode, int startAddr, int wordCount) {

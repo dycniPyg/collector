@@ -1,9 +1,8 @@
 package com.chungju.collector.consumer.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -24,7 +23,7 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025-07-03        YoungGyun Park      최초 생성
  */
-
+@Builder
 @Data
 @AllArgsConstructor @NoArgsConstructor
 @Entity
@@ -60,8 +59,18 @@ public class ConsumerSite {
     private List<PowerConsumption> consumptions = new ArrayList<>();
 
     @OneToMany(mappedBy = "site", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
     private List<PowerProduction> productions = new ArrayList<>();
 
     @OneToMany(mappedBy = "site", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ConsumerSiteIp> ipList = new ArrayList<>();
+
+    @Override
+    public String toString() {
+        return "ConsumerSite{" +
+                "id=" + id +
+                ", siteName='" + siteName + '\'' +
+                ", address='" + address + '\'' +
+                '}';
+    }
 }

@@ -1,5 +1,7 @@
 package com.chungju.collector.tcp;
 
+import com.chungju.collector.consumer.adapter.inbound.tcp.PowerProductionTcpHandler;
+import com.chungju.collector.consumer.domain.PowerProduction;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
@@ -11,7 +13,7 @@ import io.netty.handler.codec.string.StringEncoder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * packageName    : com.chungju.collector.tcp
@@ -28,14 +30,13 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class NettyTcpClient {
 
-    public void connect(String host, int port, ChannelInboundHandlerAdapter handler, ByteBuf sendMessage) {
+    public CompletableFuture<PowerProduction> connect(String host, int port, PowerProductionTcpHandler handler, ByteBuf sendMessage) {
         EventLoopGroup group = new NioEventLoopGroup();
-
         try {
-            Bootstrap bootstrap =new Bootstrap();
+            Bootstrap bootstrap = new Bootstrap();
             bootstrap.group(group)
                     .channel(NioSocketChannel.class)
-                    .handler(new ChannelInitializer<SocketChannel>(){
+                    .handler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel ch) {
                             ch.pipeline().addLast(new StringEncoder());
@@ -44,23 +45,27 @@ public class NettyTcpClient {
                         }
                     });
 
-            log.debug("TCP 서버 연결 시도 → {}:{}", host, port); // 연결시도에 대한 timeout 설정을 해야겠다.
+            log.debug("TCP 서버 연결 시도 → {}:{}", host, port);
 
-            ChannelFuture future = bootstrap.connect(host, port).awaitUninterruptibly();
-            boolean success = future.awaitUninterruptibly(5, TimeUnit.SECONDS);
-            if (success && future.isSuccess()) {
+            ChannelFuture channelFuture = bootstrap.connect(host, port).awaitUninterruptibly();
+            if (channelFuture.isSuccess()) {
                 log.debug("TCP 서버 연결 성공 → {}:{}", host, port);
-                future.channel().writeAndFlush(sendMessage);
-                future.channel().closeFuture().sync();
+                channelFuture.channel().writeAndFlush(sendMessage);
+                channelFuture.channel().closeFuture().sync();
             } else {
-                log.error("TCP 서버 연결 실패 → {}:{}", host, port, future.cause());
+                log.error("TCP 서버 연결 실패 → {}:{}", host, port, channelFuture.cause());
+                handler.getFuture().completeExceptionally(channelFuture.cause());
             }
 
-        } catch(InterruptedException e) {
-
+        } catch (InterruptedException e) {
+            log.error("TCP 처리 중 오류", e);
+            handler.getFuture().completeExceptionally(e);
+            Thread.currentThread().interrupt(); // 인터럽트 상태 복원
         } finally {
             group.shutdownGracefully();
         }
+
+        return handler.getFuture();
     }
 
     public boolean testConnection(String host, int port, int timeoutSeconds) {
