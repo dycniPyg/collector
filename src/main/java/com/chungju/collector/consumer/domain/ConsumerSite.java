@@ -1,5 +1,6 @@
 package com.chungju.collector.consumer.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
@@ -55,13 +56,16 @@ public class ConsumerSite {
     @Column(name = "update_at")
     private LocalDateTime updateAt;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "site", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PowerConsumption> consumptions = new ArrayList<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "site", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
     private List<PowerProduction> productions = new ArrayList<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "site", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ConsumerSiteIp> ipList = new ArrayList<>();
 
