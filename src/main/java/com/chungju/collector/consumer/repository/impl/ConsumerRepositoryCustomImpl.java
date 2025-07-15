@@ -2,7 +2,10 @@ package com.chungju.collector.consumer.repository.impl;
 
 import com.chungju.collector.consumer.domain.ConsumerSite;
 import com.chungju.collector.consumer.domain.QConsumerSite;
+import com.chungju.collector.consumer.domain.QConsumerSiteIp;
+import com.chungju.collector.consumer.dto.ConsumerSiteAndIpDto;
 import com.chungju.collector.consumer.repository.ConsumerRepositoryCustom;
+import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
@@ -33,5 +36,26 @@ public class ConsumerRepositoryCustomImpl implements ConsumerRepositoryCustom {
                 .fetch();
 
         return consumerSites;
+    }
+
+    @Override
+    public List<ConsumerSiteAndIpDto> findConsumerSiteAndIp() {
+
+        QConsumerSite qSite = QConsumerSite.consumerSite;
+        QConsumerSiteIp qIp = QConsumerSiteIp.consumerSiteIp;
+
+        return jpaQueryFactory
+                .select(Projections.constructor(
+                        ConsumerSiteAndIpDto.class,
+                        qSite.id,
+                        qSite.siteName,
+                        qIp.ip,
+                        qIp.port
+                ))
+                .from(qSite)
+                .leftJoin(qSite.ipList, qIp)
+                .where(qIp.useYn.eq(true))
+                .fetch()
+                ;
     }
 }

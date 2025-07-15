@@ -1,14 +1,16 @@
 package com.chungju.collector.consumer.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -22,7 +24,7 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025-07-03        YoungGyun Park      최초 생성
  */
-
+@Builder
 @Data
 @AllArgsConstructor @NoArgsConstructor
 @Entity
@@ -40,14 +42,11 @@ public class ConsumerSite {
     @Column(name = "address", columnDefinition = "text")
     private String address;
 
-    @Column(name = "kWp", precision = 6, scale = 2)
-    private BigDecimal kWp;
+    @Column(name = "kwp", precision = 6, scale = 2)
+    private BigDecimal kwp;
 
-    @Column(name = "contact", length = 100)
-    private String contact;
-
-    @Column(name = "ip")
-    private String ip;
+    @Column(name = "brand_name", length = 100)
+    private String brandName;
 
     @CreationTimestamp
     @Column(name = "create_at", updatable = false)
@@ -56,4 +55,26 @@ public class ConsumerSite {
     @UpdateTimestamp
     @Column(name = "update_at")
     private LocalDateTime updateAt;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "site", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PowerConsumption> consumptions = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "site", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    private List<PowerProduction> productions = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "site", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ConsumerSiteIp> ipList = new ArrayList<>();
+
+    @Override
+    public String toString() {
+        return "ConsumerSite{" +
+                "id=" + id +
+                ", siteName='" + siteName + '\'' +
+                ", address='" + address + '\'' +
+                '}';
+    }
 }

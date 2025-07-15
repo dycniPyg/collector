@@ -16,6 +16,39 @@ server:
 
 logging:
   level:
+    com.chungju.collector: debug
     p6spy: INFO
     org.hibernate.SQL: OFF
     org.hibernate.type.descriptor.sql.BasicBinder: OFF
+
+# /actuator/* (health, info, metrics, env, beans)
+management:
+  endpoints:
+    web:
+      base-path: /
+      exposure:
+        include: "health, info, metrics"
+#        include: "*"
+  endpoint:
+    health:
+      show-details: always
+  info:
+    env:
+      enabled: true
+    git:
+      enabled: true
+#  health:
+#    db:
+#      enabled: false
+
+
+info:
+  app:
+    name: Dycni Spring Boot App
+    description: 청주산단 데이터 수집을 위한 Application
+    version: 1.0.0
+  author: Park Young Gyun
+  git:
+    repository:
+      kind: gitlab
+      url: https://localhost:1111

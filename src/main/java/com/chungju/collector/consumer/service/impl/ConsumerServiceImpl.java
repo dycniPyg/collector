@@ -1,6 +1,7 @@
 package com.chungju.collector.consumer.service.impl;
 
 import com.chungju.collector.consumer.domain.ConsumerSite;
+import com.chungju.collector.consumer.dto.ConsumerSiteAndIpDto;
 import com.chungju.collector.consumer.repository.ConsumerRepository;
 import com.chungju.collector.consumer.service.ConsumerService;
 import lombok.Data;
@@ -31,5 +32,10 @@ public class ConsumerServiceImpl implements ConsumerService {
     @Override
     public List<ConsumerSite> findAll() {
         return consumerRepository.findAll();
+    }
+
+    @Override
+    public List<ConsumerSiteAndIpDto> findConsumerSiteAndIp() {
+        return consumerRepository.findConsumerSiteAndIp();
     }
 }

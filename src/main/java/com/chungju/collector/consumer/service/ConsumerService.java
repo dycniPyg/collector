@@ -1,6 +1,7 @@
 package com.chungju.collector.consumer.service;
 
 import com.chungju.collector.consumer.domain.ConsumerSite;
+import com.chungju.collector.consumer.dto.ConsumerSiteAndIpDto;
 
 import java.util.List;
 
@@ -17,4 +18,5 @@ import java.util.List;
  */
 public interface ConsumerService {
     List<ConsumerSite> findAll();
+    List<ConsumerSiteAndIpDto> findConsumerSiteAndIp();
 }
